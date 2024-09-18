@@ -1,0 +1,34 @@
+
+@if(isShowSuccess)
+  {
+    <div class="alert alert-success" role="alert">
+      Create Success! Go to <a routerLink="" class="alert-link">Home</a> too see questions.
+      <button type="button" class="btn-close" style="float: right;" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  }
+  <button type="button" routerLink="" class="btn btn-light">Home</button>
+  <button type="button" (click)="handleClickSaveAnswer()" class="btn btn-primary">Save Answer</button>
+  <h5>Question: {{data.Question.question_content}}</h5>
+  @if(data.Question.answer_type_code.trim() == 'ReplyText')
+  {
+    <div class="mb-3">
+      <label class="form-label">Answer:</label>
+      <textarea class="form-control" [(ngModel)]="data.Question.answer_content" rows="3"></textarea>
+    </div>
+  }
+  @else if (data.Question.answer_type_code.trim() == 'ChooseAS') 
+  {
+    @for (item of data.Question.answer_option; track $index)
+    {
+      <div class="form-check">
+        <input class="form-check-input" (change)="handleChangeOptionAnswerContent($event, item)" type="checkbox" value="" id="optionAnswerContent">
+        <label class="form-check-label" for="optionAnswerContent">
+          {{item.option_answer_content}}
+        </label>
+      </div>
+    }
+  }
+
+  
+
+

@@ -1,0 +1,57 @@
+@if(isShowSuccess)
+{
+  <div class="alert alert-success" role="alert">
+    Create Success! Go to <a routerLink="" class="alert-link"> Home </a> too see questions.
+    <button type="button" class="btn-close" style="float: right;" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+<button type="button" routerLink="" class="btn btn-light">Home</button>
+<button type="button" (click)="handleClickSaveQuestion()" class="btn btn-primary">Create Question New</button>
+<div class="mb-3">
+    <label class="form-label">Question:</label>
+    <textarea [(ngModel)]="data.questionContent" class="form-control" rows="3"></textarea>
+  </div>
+  <div class="form-check">
+    <input (change)="handleChangeChoseAnswers(false, 'ReplyText')" class="form-check-input" type="radio" name="radioChoseAnswers" checked>
+    <label class="form-check-label" for="flexRadioDefault1">
+      Reply Text
+    </label>
+  </div>
+  <div class="form-check">
+    <input (change)="handleChangeChoseAnswers(true, 'ChooseAS')" class="form-check-input" type="radio" name="radioChoseAnswers">
+    <label class="form-check-label" for="flexRadioDefault2">
+        Create Option Answer
+    </label>
+  </div>
+  @if(isCreateAnswer)
+  {
+    <form>
+        <div class="mb-3">
+          <!-- <label class="form-label">Câu trả lời</label> -->
+          <input type="text" [(ngModel)]="tempAnswer" [ngModelOptions]="{standalone:true}" class="form-control" aria-describedby="emailHelp">
+          <!-- <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div> -->
+        </div>
+        <button type="button" (click)="handleClickAddAnswers()" class="btn btn-primary">Add Option Answer</button>
+      </form>
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 50px;text-align: center;">#</th>
+            <th scope="col">Option Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+            @for (item of data.answerOptionDTOs; track $index) {
+                <tr>
+                    <th ><button type="button" (click)="handleClickAddDelete(item)" class="btn btn-light">Delete</button></th>
+                    <td>{{ item.optionAnswerContent }}</td>
+                  </tr>
+            } @empty {
+                
+            }
+        </tbody>
+      </table>
+      
+  }
+  
+
