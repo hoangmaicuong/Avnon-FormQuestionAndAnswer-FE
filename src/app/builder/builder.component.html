@@ -2,36 +2,47 @@
 {
   <div class="alert alert-success" role="alert">
     Create Success! Go to <a routerLink="" class="alert-link"> Home </a> too see questions.
-    <button type="button" class="btn-close" style="float: right;" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- <button type="button" class="btn-close" style="float: right;" data-bs-dismiss="alert" aria-label="Close"></button> -->
   </div>
 }
 <button type="button" routerLink="" class="btn btn-light">Home</button>
 <button type="button" (click)="handleClickSaveQuestion()" class="btn btn-primary">Create Question New</button>
 <div class="mb-3">
-    <label class="form-label">Question:</label>
-    <textarea [(ngModel)]="data.questionContent" class="form-control" rows="3"></textarea>
+  <label class="form-label fw-bold">Question Title:</label>
+  <textarea [(ngModel)]="data.questionTitleContent" class="form-control" rows="3"></textarea>
+</div>
+<button type="button" (click)="handleClickAddQuestionNew()" class="btn btn-secondary mb-3">Thêm câu hỏi mới</button>
+@for (item of data.questions; track $index) {
+  <div class="mb-3">  
+    <button type="button" (click)="handleClickDeleteQuestion($index)" class="btn btn-outline-danger btn-sm">X</button>
+    <label class="form-label fw-bold">&nbsp; Question Content: </label>
+    <input type="text" [(ngModel)]="item.questionContent" class="form-control">
+  </div>
+  <div class="form-check form-switch">
+    <input class="form-check-input" [checked]="item.isRequired" [(ngModel)]="item.isRequired" type="checkbox" role="switch" id="flexSwitchCheckChecked">
+    <label class="form-check-label" for="flexSwitchCheckChecked">Bắt buộc</label>
   </div>
   <div class="form-check">
-    <input (change)="handleChangeChoseAnswers(false, 'ReplyText')" class="form-check-input" type="radio" name="radioChoseAnswers" checked>
+    <input (change)="handleChangeChoseAnswers('ReplyText', item)" class="form-check-input" type="radio" name="radioChoseAnswers[{{$index}}]" [checked]="item.answerTypeCode == 'ReplyText'">
     <label class="form-check-label" for="flexRadioDefault1">
       Reply Text
     </label>
   </div>
   <div class="form-check">
-    <input (change)="handleChangeChoseAnswers(true, 'ChooseAS')" class="form-check-input" type="radio" name="radioChoseAnswers">
+    <input (change)="handleChangeChoseAnswers('ChooseAS', item)" class="form-check-input" type="radio" name="radioChoseAnswers[{{$index}}]" [checked]="item.answerTypeCode == 'ChooseAS'">
     <label class="form-check-label" for="flexRadioDefault2">
         Create Option Answer
     </label>
   </div>
-  @if(isCreateAnswer)
+  @if(item.answerTypeCode == 'ChooseAS')
   {
     <form>
         <div class="mb-3">
           <!-- <label class="form-label">Câu trả lời</label> -->
-          <input type="text" [(ngModel)]="tempAnswer" [ngModelOptions]="{standalone:true}" class="form-control" aria-describedby="emailHelp">
+          <input type="text" [(ngModel)]="item.optionAnswerContent" [ngModelOptions]="{standalone:true}" class="form-control" aria-describedby="emailHelp">
           <!-- <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div> -->
         </div>
-        <button type="button" (click)="handleClickAddAnswers()" class="btn btn-primary">Add Option Answer</button>
+        <button type="button" (click)="handleClickAddOptionAnswer(item)" class="btn btn-secondary">Add Option</button>
       </form>
       <table class="table">
         <thead>
@@ -41,10 +52,10 @@
           </tr>
         </thead>
         <tbody>
-            @for (item of data.answerOptionDTOs; track $index) {
+            @for (itemAnswerOption of item.answerOptionDTOs; track $index) {
                 <tr>
-                    <th ><button type="button" (click)="handleClickAddDelete(item)" class="btn btn-light">Delete</button></th>
-                    <td>{{ item.optionAnswerContent }}</td>
+                    <th ><button type="button" (click)="handleClickDeleteOptionAnswer(item, itemAnswerOption, $index)" class="btn btn-light">Delete</button></th>
+                    <td>{{ itemAnswerOption.optionAnswerContent }}</td>
                   </tr>
             } @empty {
                 
@@ -53,5 +64,7 @@
       </table>
       
   }
+  <hr class="text-primary">
+}
   
 

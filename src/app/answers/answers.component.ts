@@ -11,49 +11,66 @@ import {FormsModule} from '@angular/forms';
   styleUrl: './answers.component.scss'
 })
 export class AnswersComponent implements OnInit {
-  data = {
-    Question : { 
-      question_id: 0,
-      question_content : '',
-      answer_content : '',
-      answer_type_id : 0,
-      answer_type_code : '',
-      answer_option_id : 0,
-      option_answer_content : '',
-      answer_option : [] as any,
-      answer_option_chosed: [] as {answer_option_id : number, option_answer_content: ''}[]
-    }
+  dataNew = {
+    questionTitleId: 0,
+    questionTitleContent: '',
+    questions: [] as {
+      questionId: number;
+      questionContent: '';
+      isRequired: boolean;
+      answerTypeId: 0;
+      answerTypeCode: string;
+      answerContent: '';
+      optionAnswerContent: string;
+      answerOptionId: number;
+      answerOptionDTOs: {
+        answerId : number;
+        answerOptionId: number;
+        optionAnswerContent: '';
+      }[];
+      answerOptionChosed: {
+        answerId : number,
+        answerOptionId : number,
+        optionAnswerContent: ''
+      }[];
+    }[]
   };
   isShowSuccess = false;
-  question_id = 0;
+  questionTitleId = 0;
   apiUrl = 'https://localhost:7245';
   constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute){
     this.route.queryParams.subscribe(params => {
-      this.question_id = params['id'];
+      this.questionTitleId = params['questionTitleId'];
   });};
-  handleChangeOptionAnswerContent(evt:any, item : any) {
-    let answerOptionChosed = {
-      answer_option_id : item.answer_option_id,
-      option_answer_content : item.option_answer_content
-    }
+  handleChangeOptionAnswerContent(evt:any, item : any, itemOption : any) {
     if(evt.target.checked == true)
     {
-      this.data.Question.answer_option_chosed.push(answerOptionChosed);
+      item.answerOptionChosed.unshift(itemOption)
     }
     else if(evt.target.checked == false)
     {
-      let index = this.data.Question.answer_option_chosed.indexOf(answerOptionChosed);
-      this.data.Question.answer_option_chosed.splice(index, 1);
+      let answerOptionChosed = item.answerOptionChosed.find((x: any) => x.answerOptionId == itemOption.answerOptionId);
+      if(itemOption.answerOptionId != null)
+      {
+        let index = item.answerOptionChosed.indexOf(answerOptionChosed);
+        item.answerOptionChosed.splice(index, 1);
+      }
     }
-    console.log(this.data.Question.answer_option_chosed)
   };
+  handleCheckedOptionAnswer(item : any, itemOption: any) : boolean
+  {
+    let answerOption = item.answerOptionChosed.find((x : any) => x.answerOptionId == itemOption.answerOptionId);
+    if(answerOption != null)
+    {
+      return true;
+    }
+    else return false;
+  }
   handleClickSaveAnswer(){
     let dataRequest = {
-      question_id: this.data.Question.question_id,
-      answer_content: this.data.Question.answer_content ?? '',
-      answerOptionChosed: this.data.Question.answer_option_chosed
-    }
-    this.http.post(this.apiUrl + '/api/Answer',dataRequest).subscribe((response) => {
+      questionTitleId : 0
+    };
+    this.http.post(this.apiUrl + '/api/Answer',this.dataNew).subscribe((response) => {
       this.isShowSuccess = true;
     },
     (error) => {
@@ -61,18 +78,73 @@ export class AnswersComponent implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.http.get(this.apiUrl + '/api/Answer/' + this.question_id).subscribe((response : any) => {
-      for (let i = 0; i < response.Question.length; i++) {
-        this.data.Question.question_id = response.Question[i].question_id;
-        this.data.Question.question_content = response.Question[i].question_content;
-        this.data.Question.answer_content = response.Question[i].answer_content;
-        this.data.Question.answer_type_id = response.Question[i].answer_type_id;
-        this.data.Question.answer_type_code = response.Question[i].answer_type_code;
-        this.data.Question.answer_option_id = response.Question[i].answer_option_id;
-        this.data.Question.option_answer_content = response.Question[i].option_answer_content;
-        this.data.Question.answer_option.push(response.Question[i]);
+    this.http.get(this.apiUrl + '/api/Answer/' + this.questionTitleId).subscribe((response : any) => {
+      let item;
+      let question;
+      if(response.View.length > 0)
+      {
+        this.dataNew.questionTitleId = response.View[0].questionTitleId;
+        this.dataNew.questionTitleContent = response.View[0].questionTitleContent;
       }
-      console.log('this.data', this.data)
+      // fillter question
+      for (let i = 0; i < response.View.length; i++) {
+        item = response.View[i];
+        question = {
+          questionId: item.questionsId,
+          questionContent: item.questionContent,
+          isRequired: item.isRequired,
+          answerTypeId: item.answerTypeId,
+          answerTypeCode: item.answerTypeCode,
+          answerContent: item.answerContent,
+          optionAnswerContent: item.optionAnswerContent,
+          answerOptionId: item.answerOptionId,
+          answerOptionDTOs: [],
+          answerOptionChosed: []
+        }
+        if(i == 0)
+        {
+          this.dataNew.questions.unshift(question);
+          if(question.answerOptionId != null)
+          {
+            this.dataNew.questions[0].answerOptionDTOs.unshift({answerId: 0, answerOptionId: question.answerOptionId, optionAnswerContent : question.optionAnswerContent})
+          }
+        }
+        else if(item.questionsId != this.dataNew.questions[0].questionId)
+        {
+          this.dataNew.questions.unshift(question);
+          if(question.answerOptionId != null)
+          {
+            this.dataNew.questions[0].answerOptionDTOs.unshift({answerId: 0, answerOptionId: question.answerOptionId, optionAnswerContent : question.optionAnswerContent})
+          }
+        }
+        else if(item.questionsId == this.dataNew.questions[0].questionId)
+        {
+          this.dataNew.questions[0].answerOptionDTOs.unshift({answerId: 0, answerOptionId: question.answerOptionId, optionAnswerContent : question.optionAnswerContent})
+        }
+      }
+      // fillter answer
+      for(let i = 0; i < this.dataNew.questions.length; i++)
+      {
+        item = this.dataNew.questions[i];
+        let itemAnswerOption;
+        let answerOption;
+        for(let j = 0; j < response.Answer.length; j++)
+        {
+          itemAnswerOption = response.Answer[j];
+          if(itemAnswerOption.questionsId == item.questionId)
+          {
+            answerOption = {
+              answerId: itemAnswerOption.answerId,
+              answerOptionId: itemAnswerOption.answerOptionId,
+              optionAnswerContent: itemAnswerOption.optionAnswerContent
+            }
+            item.answerOptionChosed.unshift(answerOption)
+          }
+        }
+      }
+      
+      console.log('response', response)
+      console.log('this.dataNew', this.dataNew)
     },
     (error) => {
       console.error('Error fetching data:', error);
