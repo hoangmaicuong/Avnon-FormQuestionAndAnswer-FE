@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
+import { isEmpty } from 'rxjs';
 
 @Component({
   selector: 'app-answers',
@@ -11,6 +12,9 @@ import {FormsModule} from '@angular/forms';
   styleUrl: './answers.component.scss'
 })
 export class AnswersComponent implements OnInit {
+  config = {
+    isDisabledSave : false
+  }
   dataNew = {
     questionTitleId: 0,
     questionTitleContent: '',
@@ -18,6 +22,7 @@ export class AnswersComponent implements OnInit {
       questionId: number;
       questionContent: '';
       isRequired: boolean;
+      showNotificationRequired: boolean;
       answerTypeId: 0;
       answerTypeCode: string;
       answerContent: '';
@@ -67,13 +72,34 @@ export class AnswersComponent implements OnInit {
     else return false;
   }
   handleClickSaveAnswer(){
-    let dataRequest = {
-      questionTitleId : 0
-    };
+    // check required
+    this.config.isDisabledSave = true;
+    for(var item of this.dataNew.questions)
+    {
+      if(item.isRequired)
+      {
+        if(item.answerTypeCode.trim() == 'ReplyText' && (item.answerContent == null || item.answerContent.trim() == ''))
+        {
+          item.showNotificationRequired = true;
+          this.config.isDisabledSave = false;
+          return;
+        }
+        else if(item.answerTypeCode.trim() == 'ChooseAS' && item.answerOptionChosed.length < 1)
+        {
+          item.showNotificationRequired = true;
+          this.config.isDisabledSave = false;
+          return;
+        }
+
+      }
+    }
     this.http.post(this.apiUrl + '/api/Answer',this.dataNew).subscribe((response) => {
       this.isShowSuccess = true;
+      this.config.isDisabledSave = false;
+      window.location.reload();
     },
     (error) => {
+      this.config.isDisabledSave = false;
       console.error('Error fetching data:', error);
     });
   }
@@ -93,6 +119,7 @@ export class AnswersComponent implements OnInit {
           questionId: item.questionsId,
           questionContent: item.questionContent,
           isRequired: item.isRequired,
+          showNotificationRequired: false,
           answerTypeId: item.answerTypeId,
           answerTypeCode: item.answerTypeCode,
           answerContent: item.answerContent,
