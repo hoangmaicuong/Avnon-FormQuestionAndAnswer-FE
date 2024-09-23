@@ -11,7 +11,7 @@
   <label class="form-label fw-bold">Question Title:</label>
   <textarea [(ngModel)]="data.questionTitleContent" class="form-control" rows="3"></textarea>
 </div>
-<button type="button" (click)="handleClickAddQuestionNew()" class="btn btn-secondary mb-3">Thêm câu hỏi mới</button>
+<button type="button" (click)="handleClickAddQuestionNew()" class="btn btn-secondary mb-3">Add Question New</button>
 @for (item of data.questions; track $index) {
   <div class="mb-3">  
     <button type="button" (click)="handleClickDeleteQuestion($index)" class="btn btn-outline-danger btn-sm">X</button>
@@ -20,7 +20,7 @@
   </div>
   <div class="form-check form-switch">
     <input class="form-check-input" [checked]="item.isRequired" [(ngModel)]="item.isRequired" type="checkbox" role="switch" id="flexSwitchCheckChecked">
-    <label class="form-check-label" for="flexSwitchCheckChecked">Bắt buộc</label>
+    <label class="form-check-label" for="flexSwitchCheckChecked">Required</label>
   </div>
   <div class="form-check">
     <input (change)="handleChangeChoseAnswers('ReplyText', item)" class="form-check-input" type="radio" name="radioChoseAnswers[{{$index}}]" [checked]="item.answerTypeCode == 'ReplyText'">
